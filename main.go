@@ -1,11 +1,10 @@
 package main
 
 import (
-	"gugcp/controllers"
 	"gugcp/database"
+	"gugcp/routes"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -13,9 +12,7 @@ func main() {
 
 	e := echo.New()
 
-	e.Use(middleware.CORS())
-
-	e.POST("/upload", controllers.UploadFile)
+	routes.InitRoutes(e)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
