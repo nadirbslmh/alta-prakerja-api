@@ -24,3 +24,4 @@ tmp/
 
 .env
 uploads
+.vscode
