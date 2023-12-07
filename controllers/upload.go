@@ -18,6 +18,17 @@ func UploadFile(c echo.Context) error {
 		})
 	}
 
+	filename := file.Filename
+
+	// Validate the file
+	isValidFile := utils.ValidateFile(filename)
+
+	if !isValidFile {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "file type is invalid",
+		})
+	}
+
 	// Open the file
 	src, err := file.Open()
 	if err != nil {
