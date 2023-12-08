@@ -10,5 +10,7 @@ import (
 func InitRoutes(e *echo.Echo) {
 	e.Use(middleware.CORS())
 
-	e.POST("/upload", controllers.UploadFile)
+	apiRoutes := e.Group("/api/v1")
+
+	apiRoutes.POST("/upload", controllers.UploadFile)
 }
