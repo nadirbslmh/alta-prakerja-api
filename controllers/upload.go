@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"gugcp/models"
 	"gugcp/utils"
 	"io"
 	"net/http"
@@ -13,8 +14,9 @@ func UploadFile(c echo.Context) error {
 	// Get the file from the request
 	file, err := c.FormFile("file")
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Missing file parameter",
+		return c.JSON(http.StatusBadRequest, models.Response[any]{
+			Status:  false,
+			Message: "missing file parameter",
 		})
 	}
 
@@ -24,16 +26,18 @@ func UploadFile(c echo.Context) error {
 	isValidFile := utils.ValidateFile(filename)
 
 	if !isValidFile {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "file type is invalid",
+		return c.JSON(http.StatusBadRequest, models.Response[any]{
+			Status:  false,
+			Message: "file type is invalid",
 		})
 	}
 
 	// Open the file
 	src, err := file.Open()
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Could not open the file",
+		return c.JSON(http.StatusInternalServerError, models.Response[any]{
+			Status:  false,
+			Message: "could not open the file",
 		})
 	}
 	defer src.Close()
@@ -44,22 +48,25 @@ func UploadFile(c echo.Context) error {
 	// Create the destination file
 	dst, err := os.Create("uploads/" + uploadedFileName)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Could not create the destination file",
+		return c.JSON(http.StatusInternalServerError, models.Response[any]{
+			Status:  false,
+			Message: "could not create the destination file",
 		})
 	}
 	defer dst.Close()
 
 	// Copy the contents of the source file to the destination file
 	if _, err = io.Copy(dst, src); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Could not copy file content",
+		return c.JSON(http.StatusInternalServerError, models.Response[any]{
+			Status:  false,
+			Message: "could not copy file content",
 		})
 	}
 
 	// Return success response
-	return c.JSON(http.StatusOK, map[string]string{
-		"message":  "File uploaded successfully",
-		"filename": uploadedFileName,
+	return c.JSON(http.StatusOK, models.Response[string]{
+		Status:  true,
+		Message: "file uploaded successfully",
+		Data:    uploadedFileName,
 	})
 }

@@ -5,5 +5,4 @@ type RedeemInput struct {
 	State      string `json:"state"`
 	RedeemCode string `json:"redeem_code"`
 	Sequence   int    `json:"sequence"`
-	Status     byte   `json:"status"`
 }

@@ -1,28 +1,48 @@
 package services
 
 import (
+	"context"
+	"database/sql"
+	"fmt"
 	"gugcp/database"
 	"gugcp/models"
 )
 
-func SaveRedeemCode(input models.RedeemInput) {
-	query, err := database.DB.Prepare("INSERT INTO wpone_prakerja_redeems(user_id,state,redeem_code,sequence,status) VALUES (?,?,?,?,?)")
+func SaveRedeemCode(ctx context.Context, input models.RedeemInput) (models.Redeem, error) {
+	tx, err := database.DB.BeginTx(ctx, nil)
 
 	if err != nil {
-		panic(err)
+		return models.Redeem{}, fmt.Errorf("error when creating transaction: %v", err)
 	}
 
-	res, err := query.Exec(input.UserID, input.State, input.RedeemCode, input.Sequence, input.Status)
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(
+		ctx,
+		"INSERT INTO wpone_prakerja_redeems(user_id,state,redeem_code,sequence,status) VALUES (?,?,?,?,?)",
+		input.UserID, input.State, input.RedeemCode, input.Sequence, 0,
+	)
 
 	if err != nil {
-		panic(err)
+		return models.Redeem{}, fmt.Errorf("error when saving redeem code: %v", err)
 	}
 
-	lastID, err := res.LastInsertId()
+	var redeem models.Redeem
 
-	if err != nil || lastID == 0 {
-		panic(err)
+	result := tx.QueryRowContext(ctx, "SELECT * FROM wpone_prakerja_redeems WHERE state = ?", input.State)
+
+	if err := result.Scan(&redeem.ID, &redeem.UserID, &redeem.State, &redeem.RedeemCode, &redeem.Sequence, &redeem.Status); err != nil {
+		if err == sql.ErrNoRows {
+			return models.Redeem{}, fmt.Errorf("redeem is not exists: %v", err)
+		}
+		return models.Redeem{}, fmt.Errorf("error when getting redeem: %v", err)
 	}
+
+	if err := tx.Commit(); err != nil {
+		return models.Redeem{}, fmt.Errorf("error when starting transaction: %v", err)
+	}
+
+	return redeem, nil
 }
 
 func GetRedeemCode() {
