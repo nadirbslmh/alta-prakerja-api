@@ -20,8 +20,10 @@ func GenerateURL(input models.GenerateInput) (models.GenerateURLResponse, error)
 	contentType := "application/json"
 	timestamp := time.Now().Unix()
 	headerTimestamp := strconv.Itoa(int(timestamp))
+	endpoint := "/api/v1/integration/oauth/url-generate"
+	method := http.MethodPost
 
-	signature, err := utils.GenerateSignature(input, timestamp)
+	signature, err := utils.GenerateSignature(input, timestamp, endpoint, method)
 
 	if err != nil {
 		log.Printf("error when creating signature: %v", err)
@@ -30,7 +32,7 @@ func GenerateURL(input models.GenerateInput) (models.GenerateURLResponse, error)
 
 	data := []byte(fmt.Sprintf(`{"redeem_code":"%s","sequence":%d,"redirect_uri":"%s","email":"%s"}`, input.RedeemCode, input.Sequence, input.RedirectURI, input.Email))
 
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(data))
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 
 	if err != nil {
 		log.Printf("error when creating HTTP request: %v", err)
@@ -56,8 +58,6 @@ func GenerateURL(input models.GenerateInput) (models.GenerateURLResponse, error)
 		log.Printf("error when parsing request body: %v", err)
 		return models.GenerateURLResponse{}, err
 	}
-
-	// fmt.Println("response:", string(body))
 
 	response, err := models.UnmarshalGenerateURLResponse(body)
 

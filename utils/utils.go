@@ -7,12 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"path/filepath"
 	"slices"
 	"strings"
-
-	"gugcp/models"
 
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
@@ -43,10 +40,8 @@ func GetConfig(key string) string {
 	return viper.GetString(key)
 }
 
-func GenerateSignature(input models.GenerateInput, timestamp int64) (string, error) {
+func GenerateSignature(input any, timestamp int64, endpoint, method string) (string, error) {
 	clientCode := "alterra-academy"
-	method := http.MethodPost
-	endpoint := "/api/v1/integration/oauth/url-generate"
 	signKey := "db6a42a727104cd6a887b73df599ea29"
 
 	jsonStr, err := json.Marshal(input)
