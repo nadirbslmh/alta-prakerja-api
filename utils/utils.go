@@ -1,11 +1,18 @@
 package utils
 
 import (
+	"crypto/hmac"
+	"crypto/sha1"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"gugcp/models"
 
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
@@ -34,4 +41,25 @@ func GetConfig(key string) string {
 	}
 
 	return viper.GetString(key)
+}
+
+func GenerateSignature(input models.GenerateInput, timestamp int64) (string, error) {
+	clientCode := "alterra-academy"
+	method := http.MethodPost
+	endpoint := "/api/v1/integration/oauth/url-generate"
+	signKey := "db6a42a727104cd6a887b73df599ea29"
+
+	jsonStr, err := json.Marshal(input)
+
+	if err != nil {
+		return "", err
+	}
+
+	requestInput := clientCode + fmt.Sprintf("%d", timestamp) + method + endpoint + string(jsonStr)
+
+	h := hmac.New(sha1.New, []byte(signKey))
+	h.Write([]byte(requestInput))
+	signature := hex.EncodeToString(h.Sum(nil))
+
+	return signature, nil
 }

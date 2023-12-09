@@ -15,6 +15,9 @@ func InitRoutes(e *echo.Echo) {
 
 	apiRoutes := e.Group("/api/v1")
 
+	// generate
+	apiRoutes.POST("/url/generate", controllers.GenerateURL)
+
 	// redeem
 	apiRoutes.POST("/redeem/save", controllers.SaveRedeemCode)
 
