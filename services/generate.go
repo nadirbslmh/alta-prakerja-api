@@ -13,7 +13,7 @@ import (
 	"log"
 )
 
-func GenerateURL(input models.GenerateInput) {
+func GenerateURL(input models.GenerateInput) (models.GenerateURLResponse, error) {
 	url := "https://api.prakerja.go.id/api/v1/integration/oauth/url-generate"
 
 	clientCode := "alterra-academy"
@@ -25,6 +25,7 @@ func GenerateURL(input models.GenerateInput) {
 
 	if err != nil {
 		log.Printf("error when creating signature: %v", err)
+		return models.GenerateURLResponse{}, err
 	}
 
 	data := []byte(fmt.Sprintf(`{"redeem_code":"%s","sequence":%d,"redirect_uri":"%s","email":"%s"}`, input.RedeemCode, input.Sequence, input.RedirectURI, input.Email))
@@ -33,6 +34,7 @@ func GenerateURL(input models.GenerateInput) {
 
 	if err != nil {
 		log.Printf("error when creating HTTP request: %v", err)
+		return models.GenerateURLResponse{}, err
 	}
 
 	req.Header.Set("Content-Type", contentType)
@@ -43,10 +45,26 @@ func GenerateURL(input models.GenerateInput) {
 	client := &http.Client{}
 	result, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		log.Printf("error when sending HTTP request: %v", err)
+		return models.GenerateURLResponse{}, err
 	}
 	defer result.Body.Close()
 
-	body, _ := io.ReadAll(result.Body)
-	fmt.Println("response:", string(body))
+	body, err := io.ReadAll(result.Body)
+
+	if err != nil {
+		log.Printf("error when parsing request body: %v", err)
+		return models.GenerateURLResponse{}, err
+	}
+
+	// fmt.Println("response:", string(body))
+
+	response, err := models.UnmarshalGenerateURLResponse(body)
+
+	if err != nil {
+		log.Printf("error when parsing response body: %v", err)
+		return models.GenerateURLResponse{}, err
+	}
+
+	return response, nil
 }

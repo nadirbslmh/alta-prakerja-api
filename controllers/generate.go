@@ -18,10 +18,18 @@ func GenerateURL(c echo.Context) error {
 		})
 	}
 
-	services.GenerateURL(input)
+	response, err := services.GenerateURL(input)
 
-	return c.JSON(http.StatusOK, models.Response[any]{
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response[any]{
+			Status:  false,
+			Message: "error when generating Oauth URL",
+		})
+	}
+
+	return c.JSON(http.StatusOK, models.Response[models.Data]{
 		Status:  true,
-		Message: "url generated!",
+		Message: "url generated successfully",
+		Data:    response.Data,
 	})
 }
