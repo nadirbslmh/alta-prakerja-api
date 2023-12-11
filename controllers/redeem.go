@@ -18,6 +18,13 @@ func SaveRedeemCode(c echo.Context) error {
 		})
 	}
 
+	if err := input.Validate(); err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, models.Response[any]{
+			Status:  false,
+			Message: "request body is invalid",
+		})
+	}
+
 	redeem, err := services.SaveRedeemCode(c.Request().Context(), input)
 
 	if err != nil {
@@ -41,6 +48,13 @@ func CheckStatus(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, models.Response[any]{
 			Status:  false,
 			Message: "invalid request",
+		})
+	}
+
+	if err := input.Validate(); err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, models.Response[any]{
+			Status:  false,
+			Message: "request body is invalid",
 		})
 	}
 

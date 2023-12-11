@@ -18,6 +18,13 @@ func GenerateURL(c echo.Context) error {
 		})
 	}
 
+	if err := input.Validate(); err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, models.Response[any]{
+			Status:  false,
+			Message: "request body is invalid",
+		})
+	}
+
 	response, err := services.GenerateURL(input)
 
 	if err != nil {
