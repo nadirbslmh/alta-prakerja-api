@@ -9,13 +9,14 @@ import (
 type CheckStatusInput struct {
 	RedeemCode string `json:"redeem_code" validate:"required"`
 	State      string `json:"state" validate:"required"`
-	Sequence   int    `json:"sequence" validate:"required,numeric"`
+	Sequence   int    `json:"sequence" validate:"required,numeric,sequenceValid"`
 }
 
 func (r *CheckStatusInput) Validate() []*ValidationErrorResponse {
 	var errors []*ValidationErrorResponse
 
 	validate := validator.New()
+	utils.RegisterSequenceValidator(validate)
 	err := validate.Struct(r)
 
 	if err != nil {

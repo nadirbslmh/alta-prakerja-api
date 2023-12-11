@@ -10,13 +10,14 @@ type RedeemInput struct {
 	UserID     int    `json:"user_id" validate:"required,numeric"`
 	State      string `json:"state" validate:"required"`
 	RedeemCode string `json:"redeem_code" validate:"required"`
-	Sequence   int    `json:"sequence" validate:"required,numeric"`
+	Sequence   int    `json:"sequence" validate:"required,numeric,sequenceValid"`
 }
 
 func (r *RedeemInput) Validate() []*ValidationErrorResponse {
 	var errors []*ValidationErrorResponse
 
 	validate := validator.New()
+	utils.RegisterSequenceValidator(validate)
 	err := validate.Struct(r)
 
 	if err != nil {
