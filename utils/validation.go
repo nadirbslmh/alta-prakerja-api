@@ -14,6 +14,12 @@ func GetValidationErrorMessage(err validator.FieldError) string {
 		return "the uri is invalid"
 	case "sequenceValid":
 		return "the sequence value must be from 1-10 or 999"
+	case "oneof":
+		return "the value of " + err.Field() + " must be tpm or uk"
+	case "gte":
+		return "the value of " + err.Field() + " must be greater than or equal 1"
+	case "lte":
+		return "the value of " + err.Field() + " must be less than or equal 999"
 	default:
 		return "validation error in " + err.Field()
 	}

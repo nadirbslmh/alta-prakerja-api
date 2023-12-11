@@ -10,6 +10,23 @@ import (
 )
 
 func UploadFile(c echo.Context) error {
+	var uploadForm models.UploadForm
+
+	if err := c.Bind(&uploadForm); err != nil {
+		return c.JSON(http.StatusBadRequest, models.Response[any]{
+			Status:  false,
+			Message: "invalid request",
+		})
+	}
+
+	if err := uploadForm.Validate(); err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, models.Response[[]*models.ValidationErrorResponse]{
+			Status:  false,
+			Message: "request validation failed",
+			Data:    err,
+		})
+	}
+
 	// Get the file from the request
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -31,7 +48,16 @@ func UploadFile(c echo.Context) error {
 		})
 	}
 
-	res, err := services.Upload(file)
+	uploadDTO := models.UploadDTO{
+		File: file,
+		UploadRequestForm: models.UploadRequest{
+			RedeemCode: uploadForm.RedeemCode,
+			Scope:      uploadForm.Scope,
+			Sequence:   uploadForm.Sequence,
+		},
+	}
+
+	res, err := services.Upload(uploadDTO)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response[any]{

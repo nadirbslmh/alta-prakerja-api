@@ -1,13 +1,13 @@
 package services
 
 import (
+	"gugcp/models"
 	"gugcp/utils"
-	"mime/multipart"
 )
 
-func Upload(file *multipart.FileHeader) (string, error) {
+func Upload(uploadDTO models.UploadDTO) (string, error) {
 	//TODO: upload to actual storage (GCS)
-	filename, err := utils.UploadToStorage(file)
+	filename, err := utils.UploadToStorage(uploadDTO.File)
 
 	if err != nil {
 		return "", err
