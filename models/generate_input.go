@@ -1,6 +1,10 @@
 package models
 
-import "github.com/go-playground/validator/v10"
+import (
+	"gugcp/utils"
+
+	"github.com/go-playground/validator/v10"
+)
 
 type GenerateInput struct {
 	RedeemCode  string `json:"redeem_code" validate:"required"`
@@ -9,10 +13,20 @@ type GenerateInput struct {
 	Email       string `json:"email" validate:"required,email"`
 }
 
-func (r *GenerateInput) Validate() error {
-	validate := validator.New()
+func (r *GenerateInput) Validate() []*ValidationErrorResponse {
+	var errors []*ValidationErrorResponse
 
+	validate := validator.New()
 	err := validate.Struct(r)
 
-	return err
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			var element ValidationErrorResponse
+			element.ErrorMessage = utils.GetValidationErrorMessage(err)
+			element.Field = err.Field()
+			errors = append(errors, &element)
+		}
+	}
+
+	return errors
 }
