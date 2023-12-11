@@ -20,7 +20,8 @@ func InitRoutes(e *echo.Echo) {
 
 	// redeem
 	apiRoutes.POST("/redeem/save", controllers.SaveRedeemCode)
+	apiRoutes.POST("/redeem/check", controllers.CheckStatus)
 
 	// upload task
-	apiRoutes.POST("/upload", controllers.UploadFile)
+	apiRoutes.POST("/task/upload", controllers.UploadFile)
 }
