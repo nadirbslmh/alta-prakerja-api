@@ -8,7 +8,7 @@ import (
 
 type GenerateInput struct {
 	RedeemCode  string `json:"redeem_code" validate:"required"`
-	Sequence    int    `json:"sequence" validate:"required,numeric"`
+	Sequence    int    `json:"sequence" validate:"required,numeric,sequenceValid"`
 	RedirectURI string `json:"redirect_uri" validate:"required,uri"`
 	Email       string `json:"email" validate:"required,email"`
 }
@@ -17,6 +17,7 @@ func (r *GenerateInput) Validate() []*ValidationErrorResponse {
 	var errors []*ValidationErrorResponse
 
 	validate := validator.New()
+	utils.RegisterSequenceValidator(validate)
 	err := validate.Struct(r)
 
 	if err != nil {

@@ -11,7 +11,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
 )
@@ -58,19 +57,4 @@ func GenerateSignature(input any, timestamp int64, endpoint, method string) (str
 	signature := hex.EncodeToString(h.Sum(nil))
 
 	return signature, nil
-}
-
-func GetValidationErrorMessage(err validator.FieldError) string {
-	switch err.Tag() {
-	case "required":
-		return err.Field() + " is required"
-	case "email":
-		return "the email is invalid"
-	case "numeric":
-		return "the " + err.Field() + " must be numeric"
-	case "uri":
-		return "the uri is invalid"
-	default:
-		return "validation error in " + err.Field()
-	}
 }
