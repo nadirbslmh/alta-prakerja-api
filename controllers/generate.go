@@ -19,7 +19,7 @@ func GenerateURL(c echo.Context) error {
 	}
 
 	if err := input.Validate(); err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, models.Response[any]{
+		return c.JSON(http.StatusUnprocessableEntity, models.Response[[]*models.ValidationErrorResponse]{
 			Status:  false,
 			Message: "request validation failed",
 			Data:    err,

@@ -19,9 +19,10 @@ func SaveRedeemCode(c echo.Context) error {
 	}
 
 	if err := input.Validate(); err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, models.Response[any]{
+		return c.JSON(http.StatusUnprocessableEntity, models.Response[[]*models.ValidationErrorResponse]{
 			Status:  false,
-			Message: "request body is invalid",
+			Message: "request validation failed",
+			Data:    err,
 		})
 	}
 
@@ -52,9 +53,10 @@ func CheckStatus(c echo.Context) error {
 	}
 
 	if err := input.Validate(); err != nil {
-		return c.JSON(http.StatusUnprocessableEntity, models.Response[any]{
+		return c.JSON(http.StatusUnprocessableEntity, models.Response[[]*models.ValidationErrorResponse]{
 			Status:  false,
-			Message: "request body is invalid",
+			Message: "request validation failed",
+			Data:    err,
 		})
 	}
 
