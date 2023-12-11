@@ -66,7 +66,7 @@ func UploadFile(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, models.Response[string]{
+	return c.JSON(http.StatusOK, models.Response[models.UploadResponse]{
 		Status:  true,
 		Message: "file uploaded successfully",
 		Data:    res,
