@@ -25,3 +25,4 @@ tmp/
 .env
 uploads
 .vscode
+accesskey.json

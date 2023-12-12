@@ -13,19 +13,17 @@ import (
 )
 
 func Upload(uploadDTO models.UploadDTO) (models.UploadResponse, error) {
-	//TODO: upload to actual storage (GCS)
-	_, err := utils.UploadToStorage(uploadDTO.File)
+	fileURL, err := utils.UploadToStorage(uploadDTO.File)
 
 	if err != nil {
 		return models.UploadResponse{}, err
 	}
 
-	//TODO: send actual file URL to Prakerja API
 	request := models.UploadRequest{
 		RedeemCode: uploadDTO.UploadRequestForm.RedeemCode,
 		Scope:      uploadDTO.UploadRequestForm.Scope,
 		Sequence:   uploadDTO.UploadRequestForm.Sequence,
-		FileURL:    "https://usuwkgccbvsqnshxqxrt.supabase.co/storage/v1/object/public/explore-de/coba_aja.pdf", //TESTING ONLY !
+		FileURL:    fileURL,
 	}
 
 	res, err := submitTask(request)

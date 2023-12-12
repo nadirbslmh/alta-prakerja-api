@@ -1,36 +1,87 @@
 package utils
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
-	"os"
+	"time"
+
+	"cloud.google.com/go/iam"
+	iampb "cloud.google.com/go/iam/apiv1/iampb"
+	"cloud.google.com/go/storage"
+	"google.golang.org/api/option"
 )
 
-// TODO: upload to actual storage (GCS)
+const (
+	baseURL    = "https://storage.googleapis.com/"
+	projectID  = "alta-prakerja"
+	bucketName = "alta-prakerja"
+	uploadPath = "tasks/"
+)
+
+var client *storage.Client
+
 func UploadToStorage(file *multipart.FileHeader) (string, error) {
-	// Open the file
-	src, err := file.Open()
+	var err error
+
+	client, err = storage.NewClient(context.Background(), option.WithCredentialsFile("accesskey.json"))
+
 	if err != nil {
-		return "", errors.New("could not open the file")
+		return "", errors.New("error when creating storage client")
 	}
 
-	defer src.Close()
+	ctx := context.Background()
 
-	// Create a unique filename for the uploaded file
+	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
+	defer cancel()
+
+	policy, err := client.Bucket(bucketName).IAM().V3().Policy(ctx)
+	if err != nil {
+		return "", fmt.Errorf("Bucket(%q).IAM().V3().Policy: %w", bucketName, err)
+	}
+	role := "roles/storage.objectViewer"
+	policy.Bindings = append(policy.Bindings, &iampb.Binding{
+		Role:    role,
+		Members: []string{iam.AllUsers},
+	})
+	if err := client.Bucket(bucketName).IAM().V3().SetPolicy(ctx, policy); err != nil {
+		return "", fmt.Errorf("Bucket(%q).IAM().SetPolicy: %w", bucketName, err)
+	}
+
+	blobFile, err := file.Open()
+
+	if err != nil {
+		return "", errors.New("open file failed")
+	}
+
 	uploadedFileName := GenerateFileName(file.Filename)
 
-	// Create the destination file
-	dst, err := os.Create("uploads/" + uploadedFileName)
-	if err != nil {
-		return "", errors.New("could not create the destination file")
-	}
-	defer dst.Close()
+	objectName := uploadPath + uploadedFileName
 
-	// Copy the contents of the source file to the destination file
-	if _, err = io.Copy(dst, src); err != nil {
-		return "", errors.New("could not copy file content")
+	sw := client.Bucket(bucketName).Object(objectName).NewWriter(ctx)
+
+	if _, err := io.Copy(sw, blobFile); err != nil {
+		return "", errors.New("error when copying file")
 	}
 
-	return uploadedFileName, nil
+	if err := sw.Close(); err != nil {
+		return "", errors.New("error when closing storage client")
+	}
+
+	publicURL := getPublicURL(objectName)
+
+	log.Println("upload complete! ", publicURL)
+
+	return publicURL, nil
+}
+
+func CloseStorageClient() error {
+	return client.Close()
+}
+
+func getPublicURL(objectName string) string {
+	return fmt.Sprintf("%s%s/%s", baseURL, projectID, objectName)
 }

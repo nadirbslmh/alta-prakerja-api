@@ -4,6 +4,7 @@ import (
 	"context"
 	"gugcp/database"
 	"gugcp/routes"
+	"gugcp/utils"
 	"log"
 	"net/http"
 	"os"
@@ -33,6 +34,9 @@ func main() {
 	wait := gracefulShutdown(context.Background(), 2*time.Second, map[string]operation{
 		"database": func(ctx context.Context) error {
 			return database.DB.Close()
+		},
+		"storage": func(ctx context.Context) error {
+			return utils.CloseStorageClient()
 		},
 		"http-server": func(ctx context.Context) error {
 			return e.Shutdown(context.Background())
