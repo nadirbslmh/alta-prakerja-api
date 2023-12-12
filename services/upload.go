@@ -59,8 +59,6 @@ func submitTask(request models.UploadRequest) (models.UploadResponse, error) {
 		request.FileURL,
 	))
 
-	log.Println("request data: ", string(data))
-
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 
 	if err != nil {
