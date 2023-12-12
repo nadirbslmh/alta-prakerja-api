@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"gugcp/database"
 	"gugcp/routes"
 	"gugcp/utils"
@@ -25,8 +26,14 @@ func main() {
 
 	routes.InitRoutes(e)
 
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+
+	}
+
 	go func() {
-		if err := e.Start(":8080"); err != http.ErrServerClosed {
+		if err := e.Start(fmt.Sprintf(":%s", port)); err != http.ErrServerClosed {
 			e.Logger.Fatal("shutting down the server")
 		}
 	}()

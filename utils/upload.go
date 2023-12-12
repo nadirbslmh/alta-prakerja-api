@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"mime/multipart"
 	"time"
 
@@ -40,7 +39,7 @@ func UploadToStorage(file *multipart.FileHeader) (string, error) {
 
 	policy, err := client.Bucket(bucketName).IAM().V3().Policy(ctx)
 	if err != nil {
-		return "", fmt.Errorf("Bucket(%q).IAM().V3().Policy: %w", bucketName, err)
+		return "", errors.New("error when setting up a bucket")
 	}
 	role := "roles/storage.objectViewer"
 	policy.Bindings = append(policy.Bindings, &iampb.Binding{
@@ -48,7 +47,7 @@ func UploadToStorage(file *multipart.FileHeader) (string, error) {
 		Members: []string{iam.AllUsers},
 	})
 	if err := client.Bucket(bucketName).IAM().V3().SetPolicy(ctx, policy); err != nil {
-		return "", fmt.Errorf("Bucket(%q).IAM().SetPolicy: %w", bucketName, err)
+		return "", errors.New("error when setting up a bucket")
 	}
 
 	blobFile, err := file.Open()
@@ -72,8 +71,6 @@ func UploadToStorage(file *multipart.FileHeader) (string, error) {
 	}
 
 	publicURL := getPublicURL(objectName)
-
-	log.Println("upload complete! ", publicURL)
 
 	return publicURL, nil
 }
