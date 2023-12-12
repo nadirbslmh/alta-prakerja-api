@@ -26,3 +26,5 @@ tmp/
 uploads
 .vscode
 accesskey.json
+app.yaml
+env_variables.yaml

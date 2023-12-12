@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -30,6 +31,10 @@ func ValidateFile(filename string) bool {
 }
 
 func GetConfig(key string) string {
+	if os.Getenv("MODE") == "production" {
+		return os.Getenv(key)
+	}
+
 	viper.AddConfigPath(".")
 	viper.SetConfigFile(".env")
 
