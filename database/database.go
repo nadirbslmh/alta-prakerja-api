@@ -26,7 +26,7 @@ func InitDB() {
 	DB, err = sql.Open("mysql", dsn)
 
 	if err != nil {
-		panic(err.Error())
+		log.Fatalf("error when connecting to the database: %v", err)
 	}
 
 	log.Println("connected to the database")

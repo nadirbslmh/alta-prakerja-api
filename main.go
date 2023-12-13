@@ -21,6 +21,7 @@ type operation func(ctx context.Context) error
 
 func main() {
 	database.InitDB()
+	utils.InitStorageClient()
 
 	e := echo.New()
 

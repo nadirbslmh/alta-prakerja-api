@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"time"
 
@@ -23,15 +24,19 @@ const (
 
 var client *storage.Client
 
-func UploadToStorage(file *multipart.FileHeader) (string, error) {
+func InitStorageClient() {
 	var err error
 
 	client, err = storage.NewClient(context.Background(), option.WithCredentialsFile("accesskey.json"))
 
 	if err != nil {
-		return "", errors.New("error when creating storage client")
+		log.Fatalf("error when creating storage client: %v", err)
 	}
 
+	log.Println("storage client initialized")
+}
+
+func UploadToStorage(file *multipart.FileHeader) (string, error) {
 	ctx := context.Background()
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
