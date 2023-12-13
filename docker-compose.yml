@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+  altaprakerja-api-service:
+    build: .
+    ports:
+      - 8080:8080
+    restart: on-failure
+    environment:
+    - MODE="production"
+    - DB_HOST="34.101.147.33"
+    - DB_PORT="3306"
+    - DB_USERNAME="one_user"
+    - DB_PASSWORD="Rahasia88oke#"
+    - DB_NAME="one_db"
+    
