@@ -52,6 +52,33 @@ func SaveRedeemCode(ctx context.Context, input models.RedeemInput) (models.Redee
 	return redeem, nil
 }
 
+func GetRedeemByState(ctx context.Context, state string) (models.Redeem, error) {
+	tx, err := database.DB.BeginTx(ctx, nil)
+
+	if err != nil {
+		return models.Redeem{}, fmt.Errorf("error when creating transaction: %v", err)
+	}
+
+	defer tx.Rollback()
+
+	var redeem models.Redeem
+
+	result := tx.QueryRowContext(ctx, "SELECT * FROM wpone_prakerja_redeems WHERE state = ?", state)
+
+	if err := result.Scan(&redeem.ID, &redeem.UserID, &redeem.State, &redeem.RedeemCode, &redeem.Sequence, &redeem.Status); err != nil {
+		if err == sql.ErrNoRows {
+			return models.Redeem{}, fmt.Errorf("redeem is not exists: %v", err)
+		}
+		return models.Redeem{}, fmt.Errorf("error when getting redeem: %v", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return models.Redeem{}, fmt.Errorf("error when starting transaction: %v", err)
+	}
+
+	return redeem, nil
+}
+
 func CheckAttendanceStatus(ctx context.Context, input models.CheckStatusInput) (models.Redeem, error) {
 	checkResult, err := getAttendanceStatus(input)
 

@@ -42,6 +42,25 @@ func SaveRedeemCode(c echo.Context) error {
 	})
 }
 
+func GetRedeem(c echo.Context) error {
+	state := c.Param("state")
+
+	redeem, err := services.GetRedeemByState(c.Request().Context(), state)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response[any]{
+			Status:  false,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, models.Response[models.Redeem]{
+		Status:  true,
+		Message: "redeem found",
+		Data:    redeem,
+	})
+}
+
 func CheckStatus(c echo.Context) error {
 	var input models.CheckStatusInput
 
