@@ -15,11 +15,11 @@ import (
 	"google.golang.org/api/option"
 )
 
-const (
-	baseURL    = "https://storage.googleapis.com/"
-	projectID  = "alta-prakerja"
-	bucketName = "alta-prakerja"
-	uploadPath = "tasks/"
+var (
+	baseURL    = GetConfig("STORAGE_BASE_URL")
+	projectID  = GetConfig("STORAGE_PROJECT_ID")
+	bucketName = GetConfig("STORAGE_BUCKET_NAME")
+	uploadPath = GetConfig("STORAGE_UPLOAD_PATH")
 )
 
 var client *storage.Client
