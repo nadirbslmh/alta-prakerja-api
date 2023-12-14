@@ -49,15 +49,11 @@ func UploadFile(c echo.Context) error {
 	}
 
 	uploadDTO := models.UploadDTO{
-		File: file,
-		UploadRequestForm: models.UploadRequest{
-			RedeemCode: uploadForm.RedeemCode,
-			Scope:      uploadForm.Scope,
-			Sequence:   uploadForm.Sequence,
-		},
+		File:           file,
+		UploadFormData: uploadForm,
 	}
 
-	res, err := services.Upload(uploadDTO)
+	res, err := services.Upload(c.Request().Context(), uploadDTO)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response[any]{

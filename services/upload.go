@@ -2,8 +2,10 @@ package services
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
+	"gugcp/database"
 	"gugcp/models"
 	"gugcp/utils"
 	"io"
@@ -13,7 +15,7 @@ import (
 	"time"
 )
 
-func Upload(uploadDTO models.UploadDTO) (models.UploadResponse, error) {
+func Upload(ctx context.Context, uploadDTO models.UploadDTO) (models.UploadResponse, error) {
 	fileURL, err := utils.UploadToStorage(uploadDTO.File)
 
 	if err != nil {
@@ -21,10 +23,16 @@ func Upload(uploadDTO models.UploadDTO) (models.UploadResponse, error) {
 	}
 
 	request := models.UploadRequest{
-		RedeemCode: uploadDTO.UploadRequestForm.RedeemCode,
-		Scope:      uploadDTO.UploadRequestForm.Scope,
-		Sequence:   uploadDTO.UploadRequestForm.Sequence,
+		RedeemCode: uploadDTO.UploadFormData.RedeemCode,
+		Scope:      uploadDTO.UploadFormData.Scope,
+		Sequence:   uploadDTO.UploadFormData.Sequence,
 		FileURL:    fileURL,
+	}
+
+	err = saveTaskToDB(ctx, uploadDTO, fileURL)
+
+	if err != nil {
+		return models.UploadResponse{}, err
 	}
 
 	res, err := submitTask(request)
@@ -95,4 +103,37 @@ func submitTask(request models.UploadRequest) (models.UploadResponse, error) {
 	}
 
 	return response, nil
+}
+
+func saveTaskToDB(ctx context.Context, uploadDTO models.UploadDTO, fileURL string) error {
+	tx, err := database.DB.BeginTx(ctx, nil)
+
+	if err != nil {
+		log.Printf("error when creating transaction: %v", err)
+		return errors.New("error when creating transaction")
+	}
+
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(
+		ctx,
+		"INSERT INTO wpone_prakerja_task(user_ID,sesi,link,batch,redeem_code) VALUES (?,?,?,?,?)",
+		uploadDTO.UploadFormData.UserID,
+		uploadDTO.UploadFormData.Session,
+		fileURL,
+		uploadDTO.UploadFormData.Batch,
+		uploadDTO.UploadFormData.RedeemCode,
+	)
+
+	if err != nil {
+		log.Printf("error when saving redeem code: %v", err)
+		return errors.New("error when saving redeem code")
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Printf("error when starting transaction: %v", err)
+		return errors.New("error when starting transaction")
+	}
+
+	return nil
 }
