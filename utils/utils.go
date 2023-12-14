@@ -46,8 +46,8 @@ func GetConfig(key string) string {
 }
 
 func GenerateSignature(input any, timestamp int64, endpoint, method string) (string, error) {
-	clientCode := "alterra-academy"
-	signKey := "db6a42a727104cd6a887b73df599ea29"
+	clientCode := GetConfig("CLIENT_CODE")
+	signKey := GetConfig("SIGNATURE_KEY")
 
 	jsonStr, err := json.Marshal(input)
 

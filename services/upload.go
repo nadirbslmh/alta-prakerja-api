@@ -38,7 +38,7 @@ func Upload(uploadDTO models.UploadDTO) (models.UploadResponse, error) {
 func submitTask(request models.UploadRequest) (models.UploadResponse, error) {
 	url := "https://api.prakerja.go.id/api/v1/integration/tpm/submission"
 
-	clientCode := "alterra-academy"
+	clientCode := utils.GetConfig("CLIENT_CODE")
 	contentType := "application/json"
 	timestamp := time.Now().Unix()
 	headerTimestamp := strconv.Itoa(int(timestamp))

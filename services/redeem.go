@@ -102,7 +102,7 @@ func CheckAttendanceStatus(ctx context.Context, input models.CheckStatusInput) (
 func getAttendanceStatus(input models.CheckStatusInput) (models.CheckStatusResponse, error) {
 	url := "https://api.prakerja.go.id/api/v1/integration/payment/redeem-code/status"
 
-	clientCode := "alterra-academy"
+	clientCode := utils.GetConfig("CLIENT_CODE")
 	contentType := "application/json"
 	timestamp := time.Now().Unix()
 	headerTimestamp := strconv.Itoa(int(timestamp))

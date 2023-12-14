@@ -16,7 +16,7 @@ import (
 func GenerateURL(input models.GenerateInput) (models.GenerateURLResponse, error) {
 	url := "https://api.prakerja.go.id/api/v1/integration/oauth/url-generate"
 
-	clientCode := "alterra-academy"
+	clientCode := utils.GetConfig("CLIENT_CODE")
 	contentType := "application/json"
 	timestamp := time.Now().Unix()
 	headerTimestamp := strconv.Itoa(int(timestamp))
