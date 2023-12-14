@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"gugcp/models"
 	"gugcp/utils"
@@ -49,7 +50,7 @@ func submitTask(request models.UploadRequest) (models.UploadResponse, error) {
 
 	if err != nil {
 		log.Printf("error when creating signature: %v", err)
-		return models.UploadResponse{}, err
+		return models.UploadResponse{}, errors.New("error when creating signature")
 	}
 
 	data := []byte(fmt.Sprintf(`{"redeem_code":"%s","scope":"%s","sequence":%d,"url_file":"%s"}`,
@@ -63,7 +64,7 @@ func submitTask(request models.UploadRequest) (models.UploadResponse, error) {
 
 	if err != nil {
 		log.Printf("error when creating HTTP request: %v", err)
-		return models.UploadResponse{}, err
+		return models.UploadResponse{}, errors.New("error when creating HTTP request")
 	}
 
 	req.Header.Set("Content-Type", contentType)
@@ -75,22 +76,22 @@ func submitTask(request models.UploadRequest) (models.UploadResponse, error) {
 	result, err := client.Do(req)
 	if err != nil {
 		log.Printf("error when sending HTTP request: %v", err)
-		return models.UploadResponse{}, err
+		return models.UploadResponse{}, errors.New("error when sending HTTP request")
 	}
 	defer result.Body.Close()
 
 	body, err := io.ReadAll(result.Body)
 
 	if err != nil {
-		log.Printf("error when parsing request body: %v", err)
-		return models.UploadResponse{}, err
+		log.Printf("error when parsing response body: %v", err)
+		return models.UploadResponse{}, errors.New("error when parsing response")
 	}
 
 	response, err := models.UnmarshalUploadResponse(body)
 
 	if err != nil {
 		log.Printf("error when parsing response body: %v", err)
-		return models.UploadResponse{}, err
+		return models.UploadResponse{}, errors.New("error when parsing response")
 	}
 
 	return response, nil

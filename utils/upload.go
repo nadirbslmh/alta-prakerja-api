@@ -44,6 +44,7 @@ func UploadToStorage(file *multipart.FileHeader) (string, error) {
 
 	policy, err := client.Bucket(bucketName).IAM().V3().Policy(ctx)
 	if err != nil {
+		log.Printf("error when setting up a bucket: %v", err)
 		return "", errors.New("error when setting up a bucket")
 	}
 	role := "roles/storage.objectViewer"
@@ -52,12 +53,14 @@ func UploadToStorage(file *multipart.FileHeader) (string, error) {
 		Members: []string{iam.AllUsers},
 	})
 	if err := client.Bucket(bucketName).IAM().V3().SetPolicy(ctx, policy); err != nil {
+		log.Printf("error when setting up a bucket: %v", err)
 		return "", errors.New("error when setting up a bucket")
 	}
 
 	blobFile, err := file.Open()
 
 	if err != nil {
+		log.Printf("open file failed: %v", err)
 		return "", errors.New("open file failed")
 	}
 
@@ -68,10 +71,12 @@ func UploadToStorage(file *multipart.FileHeader) (string, error) {
 	sw := client.Bucket(bucketName).Object(objectName).NewWriter(ctx)
 
 	if _, err := io.Copy(sw, blobFile); err != nil {
+		log.Printf("error when copying file: %v", err)
 		return "", errors.New("error when copying file")
 	}
 
 	if err := sw.Close(); err != nil {
+		log.Printf("error when closing storage client: %v", err)
 		return "", errors.New("error when closing storage client")
 	}
 

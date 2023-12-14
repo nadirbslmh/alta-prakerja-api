@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"gugcp/database"
 	"gugcp/models"
@@ -19,7 +20,8 @@ func SaveRedeemCode(ctx context.Context, input models.RedeemInput) (models.Redee
 	tx, err := database.DB.BeginTx(ctx, nil)
 
 	if err != nil {
-		return models.Redeem{}, fmt.Errorf("error when creating transaction: %v", err)
+		log.Printf("error when creating transaction: %v", err)
+		return models.Redeem{}, errors.New("error when creating transaction")
 	}
 
 	defer tx.Rollback()
@@ -31,7 +33,8 @@ func SaveRedeemCode(ctx context.Context, input models.RedeemInput) (models.Redee
 	)
 
 	if err != nil {
-		return models.Redeem{}, fmt.Errorf("error when saving redeem code: %v", err)
+		log.Printf("error when saving redeem code: %v", err)
+		return models.Redeem{}, errors.New("error when saving redeem code")
 	}
 
 	var redeem models.Redeem
@@ -40,13 +43,16 @@ func SaveRedeemCode(ctx context.Context, input models.RedeemInput) (models.Redee
 
 	if err := result.Scan(&redeem.ID, &redeem.UserID, &redeem.State, &redeem.RedeemCode, &redeem.Sequence, &redeem.Status); err != nil {
 		if err == sql.ErrNoRows {
-			return models.Redeem{}, fmt.Errorf("redeem is not exists: %v", err)
+			log.Printf("redeem is not exists: %v", err)
+			return models.Redeem{}, errors.New("redeem is not exists")
 		}
-		return models.Redeem{}, fmt.Errorf("error when getting redeem: %v", err)
+		log.Printf("error when getting redeem: %v", err)
+		return models.Redeem{}, errors.New("error when getting redeem")
 	}
 
 	if err := tx.Commit(); err != nil {
-		return models.Redeem{}, fmt.Errorf("error when starting transaction: %v", err)
+		log.Printf("error when starting transaction: %v", err)
+		return models.Redeem{}, errors.New("error when starting transaction")
 	}
 
 	return redeem, nil
@@ -56,7 +62,8 @@ func GetRedeemByState(ctx context.Context, state string) (models.Redeem, error) 
 	tx, err := database.DB.BeginTx(ctx, nil)
 
 	if err != nil {
-		return models.Redeem{}, fmt.Errorf("error when creating transaction: %v", err)
+		log.Printf("error when creating transaction: %v", err)
+		return models.Redeem{}, errors.New("error when creating transaction")
 	}
 
 	defer tx.Rollback()
@@ -67,13 +74,16 @@ func GetRedeemByState(ctx context.Context, state string) (models.Redeem, error) 
 
 	if err := result.Scan(&redeem.ID, &redeem.UserID, &redeem.State, &redeem.RedeemCode, &redeem.Sequence, &redeem.Status); err != nil {
 		if err == sql.ErrNoRows {
-			return models.Redeem{}, fmt.Errorf("redeem is not exists: %v", err)
+			log.Printf("redeem is not exists: %v", err)
+			return models.Redeem{}, errors.New("redeem is not exists")
 		}
-		return models.Redeem{}, fmt.Errorf("error when getting redeem: %v", err)
+		log.Printf("error when getting redeem: %v", err)
+		return models.Redeem{}, errors.New("error when getting redeem")
 	}
 
 	if err := tx.Commit(); err != nil {
-		return models.Redeem{}, fmt.Errorf("error when starting transaction: %v", err)
+		log.Printf("error when starting transaction: %v", err)
+		return models.Redeem{}, errors.New("error when starting transaction")
 	}
 
 	return redeem, nil
@@ -83,7 +93,8 @@ func CheckAttendanceStatus(ctx context.Context, input models.CheckStatusInput) (
 	checkResult, err := getAttendanceStatus(input)
 
 	if err != nil {
-		return models.Redeem{}, fmt.Errorf("error when checking status: %v", err)
+		log.Printf("error when checking status: %v", err)
+		return models.Redeem{}, errors.New("error when checking status")
 	}
 
 	if checkResult.Data.AttendanceStatus != 1 {
@@ -93,7 +104,8 @@ func CheckAttendanceStatus(ctx context.Context, input models.CheckStatusInput) (
 	tx, err := database.DB.BeginTx(ctx, nil)
 
 	if err != nil {
-		return models.Redeem{}, fmt.Errorf("error when creating transaction: %v", err)
+		log.Printf("error when creating transaction: %v", err)
+		return models.Redeem{}, errors.New("error when creating transaction")
 	}
 
 	defer tx.Rollback()
@@ -105,7 +117,8 @@ func CheckAttendanceStatus(ctx context.Context, input models.CheckStatusInput) (
 	)
 
 	if err != nil {
-		return models.Redeem{}, fmt.Errorf("error when updating redeem status: %v", err)
+		log.Printf("error when updating redeem status: %v", err)
+		return models.Redeem{}, errors.New("error when updating redeem status")
 	}
 
 	var redeem models.Redeem
@@ -114,13 +127,16 @@ func CheckAttendanceStatus(ctx context.Context, input models.CheckStatusInput) (
 
 	if err := result.Scan(&redeem.ID, &redeem.UserID, &redeem.State, &redeem.RedeemCode, &redeem.Sequence, &redeem.Status); err != nil {
 		if err == sql.ErrNoRows {
-			return models.Redeem{}, fmt.Errorf("redeem is not exists: %v", err)
+			log.Printf("redeem is not exists: %v", err)
+			return models.Redeem{}, errors.New("redeem is not exists")
 		}
-		return models.Redeem{}, fmt.Errorf("error when getting redeem: %v", err)
+		log.Printf("error when getting redeem: %v", err)
+		return models.Redeem{}, errors.New("error when getting redeem")
 	}
 
 	if err := tx.Commit(); err != nil {
-		return models.Redeem{}, fmt.Errorf("error when starting transaction: %v", err)
+		log.Printf("error when starting transaction: %v", err)
+		return models.Redeem{}, errors.New("error when starting transaction")
 	}
 
 	return redeem, nil
