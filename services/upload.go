@@ -117,17 +117,18 @@ func saveTaskToDB(ctx context.Context, uploadDTO models.UploadDTO, fileURL strin
 
 	_, err = tx.ExecContext(
 		ctx,
-		"INSERT INTO wpone_prakerja_task(user_ID,sesi,link,batch,redeem_code) VALUES (?,?,?,?,?)",
+		"INSERT INTO wpone_prakerja_task(user_ID,sesi,link,batch,redeem_code,scope) VALUES (?,?,?,?,?,?)",
 		uploadDTO.UploadFormData.UserID,
 		uploadDTO.UploadFormData.Session,
 		fileURL,
 		uploadDTO.UploadFormData.Batch,
 		uploadDTO.UploadFormData.RedeemCode,
+		uploadDTO.UploadFormData.Scope,
 	)
 
 	if err != nil {
-		log.Printf("error when saving redeem code: %v", err)
-		return errors.New("error when saving redeem code")
+		log.Printf("error when saving task data: %v", err)
+		return errors.New("error when saving task data")
 	}
 
 	if err := tx.Commit(); err != nil {
