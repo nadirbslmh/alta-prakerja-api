@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"gugcp/models"
 	"gugcp/utils"
@@ -64,6 +65,11 @@ func GenerateURL(input models.GenerateInput) (models.GenerateURLResponse, error)
 	if err != nil {
 		log.Printf("error when parsing response body: %v", err)
 		return models.GenerateURLResponse{}, err
+	}
+
+	if result.StatusCode != http.StatusOK {
+		log.Printf("error when generating OAuth URL: %v", response.Message)
+		return models.GenerateURLResponse{}, errors.New(response.Message)
 	}
 
 	return response, nil

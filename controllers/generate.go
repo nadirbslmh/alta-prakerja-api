@@ -31,7 +31,7 @@ func GenerateURL(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response[any]{
 			Status:  false,
-			Message: "error when generating Oauth URL",
+			Message: err.Error(),
 		})
 	}
 
