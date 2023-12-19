@@ -94,11 +94,11 @@ func CheckAttendanceStatus(ctx context.Context, input models.CheckStatusInput) (
 
 	if err != nil {
 		log.Printf("error when checking status: %v", err)
-		return models.Redeem{}, errors.New("error when checking status")
+		return models.Redeem{}, err
 	}
 
 	if checkResult.Data.AttendanceStatus != 1 {
-		return models.Redeem{}, fmt.Errorf("attendance status is invalid")
+		return models.Redeem{}, errors.New("attendance status is invalid")
 	}
 
 	tx, err := database.DB.BeginTx(ctx, nil)
@@ -198,6 +198,11 @@ func getAttendanceStatus(input models.CheckStatusInput) (models.CheckStatusRespo
 	if err != nil {
 		log.Printf("error when parsing response body: %v", err)
 		return models.CheckStatusResponse{}, err
+	}
+
+	if result.StatusCode != http.StatusOK {
+		log.Printf("error when checking attendance status: %v", response.Message)
+		return models.CheckStatusResponse{}, errors.New(response.Message)
 	}
 
 	return response, nil
