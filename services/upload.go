@@ -29,13 +29,13 @@ func Upload(ctx context.Context, uploadDTO models.UploadDTO) (models.UploadRespo
 		FileURL:    fileURL,
 	}
 
-	err = saveTaskToDB(ctx, uploadDTO, fileURL)
+	res, err := submitTask(request)
 
 	if err != nil {
 		return models.UploadResponse{}, err
 	}
 
-	res, err := submitTask(request)
+	err = saveTaskToDB(ctx, uploadDTO, fileURL)
 
 	if err != nil {
 		return models.UploadResponse{}, err
@@ -100,6 +100,11 @@ func submitTask(request models.UploadRequest) (models.UploadResponse, error) {
 	if err != nil {
 		log.Printf("error when parsing response body: %v", err)
 		return models.UploadResponse{}, errors.New("error when parsing response")
+	}
+
+	if result.StatusCode != http.StatusOK {
+		log.Printf("error when submitting task: %v", response.Message)
+		return models.UploadResponse{}, errors.New(response.Message)
 	}
 
 	return response, nil
