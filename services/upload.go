@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"gugcp/database"
@@ -22,8 +23,16 @@ func Upload(ctx context.Context, uploadDTO models.UploadDTO) (models.UploadRespo
 		return models.UploadResponse{}, err
 	}
 
+	redeem, err := getRedeemByUserID(ctx, uploadDTO.UploadFormData.UserID)
+
+	if err != nil {
+		return models.UploadResponse{}, errors.New("redeem not found")
+	}
+
+	userRedeemCode := redeem.RedeemCode
+
 	request := models.UploadRequest{
-		RedeemCode: uploadDTO.UploadFormData.RedeemCode,
+		RedeemCode: userRedeemCode,
 		Scope:      uploadDTO.UploadFormData.Scope,
 		Sequence:   uploadDTO.UploadFormData.Sequence,
 		FileURL:    fileURL,
@@ -34,6 +43,8 @@ func Upload(ctx context.Context, uploadDTO models.UploadDTO) (models.UploadRespo
 	if err != nil {
 		return models.UploadResponse{}, err
 	}
+
+	uploadDTO.UploadFormData.RedeemCode = userRedeemCode
 
 	err = saveTaskToDB(ctx, uploadDTO, fileURL)
 
@@ -142,4 +153,35 @@ func saveTaskToDB(ctx context.Context, uploadDTO models.UploadDTO, fileURL strin
 	}
 
 	return nil
+}
+
+func getRedeemByUserID(ctx context.Context, userID int) (models.Redeem, error) {
+	tx, err := database.DB.BeginTx(ctx, nil)
+
+	if err != nil {
+		log.Printf("error when creating transaction: %v", err)
+		return models.Redeem{}, errors.New("error when creating transaction")
+	}
+
+	defer tx.Rollback()
+
+	var redeem models.Redeem
+
+	result := tx.QueryRowContext(ctx, "SELECT * FROM wpone_prakerja_redeems WHERE user_id = ?", userID)
+
+	if err := result.Scan(&redeem.ID, &redeem.UserID, &redeem.State, &redeem.RedeemCode, &redeem.Sequence, &redeem.Status); err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("redeem is not exists: %v", err)
+			return models.Redeem{}, errors.New("redeem is not exists")
+		}
+		log.Printf("error when getting redeem: %v", err)
+		return models.Redeem{}, errors.New("error when getting redeem")
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Printf("error when starting transaction: %v", err)
+		return models.Redeem{}, errors.New("error when starting transaction")
+	}
+
+	return redeem, nil
 }
