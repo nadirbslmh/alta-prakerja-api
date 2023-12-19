@@ -9,7 +9,7 @@ import (
 type GenerateInput struct {
 	RedeemCode  string `json:"redeem_code" validate:"required"`
 	Sequence    int    `json:"sequence" validate:"required,numeric,sequenceValid"`
-	RedirectURI string `json:"redirect_uri" validate:"required,uri"`
+	RedirectURI string `json:"redirect_uri"`
 	Email       string `json:"email" validate:"required,email"`
 }
 

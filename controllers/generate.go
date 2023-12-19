@@ -3,6 +3,7 @@ package controllers
 import (
 	"gugcp/models"
 	"gugcp/services"
+	"gugcp/utils"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -24,6 +25,13 @@ func GenerateURL(c echo.Context) error {
 			Message: "request validation failed",
 			Data:    err,
 		})
+	}
+
+	switch input.Sequence {
+	case 1:
+		input.RedirectURI = utils.GetConfig("REDIRECT_URI_REDEEM")
+	default:
+		input.RedirectURI = utils.GetConfig("REDIRECT_URI_PROFILE")
 	}
 
 	response, err := services.GenerateURL(input)
