@@ -32,4 +32,7 @@ func InitRoutes(e *echo.Echo) {
 
 	// upload task
 	apiRoutes.POST("/task/upload", controllers.UploadFile)
+
+	// task management
+	apiRoutes.POST("/task/feedback/:taskID", controllers.SendFeedback)
 }
