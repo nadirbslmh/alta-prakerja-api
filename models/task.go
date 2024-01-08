@@ -8,4 +8,5 @@ type Task struct {
 	Batch      string `json:"batch"`
 	RedeemCode string `json:"redeem_code"`
 	Scope      string `json:"scope"`
+	Feedback   string `json:"feedback"`
 }

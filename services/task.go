@@ -43,6 +43,13 @@ func SendFeedback(ctx context.Context, input models.FeedbackInput, taskID int) (
 		return models.FeedbackResponse{}, err
 	}
 
+	//TODO: update task to include the review
+	err = updateTask(ctx, input, taskID)
+
+	if err != nil {
+		return models.FeedbackResponse{}, err
+	}
+
 	return result, nil
 }
 
@@ -60,7 +67,7 @@ func getTaskByID(ctx context.Context, taskID int) (models.Task, error) {
 
 	result := tx.QueryRowContext(ctx, "SELECT * FROM wpone_prakerja_task WHERE ID = ?", taskID)
 
-	if err := result.Scan(&task.ID, &task.UserID, &task.Session, &task.Link, &task.Batch, &task.RedeemCode, &task.Scope); err != nil {
+	if err := result.Scan(&task.ID, &task.UserID, &task.Session, &task.Link, &task.Batch, &task.RedeemCode, &task.Scope, &task.Feedback); err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("task is not exists: %v", err)
 			return models.Task{}, errors.New("task is not exists")
@@ -142,4 +149,33 @@ func submitFeedback(request models.FeedbackRequest) (models.FeedbackResponse, er
 	}
 
 	return response, nil
+}
+
+func updateTask(ctx context.Context, input models.FeedbackInput, taskID int) error {
+	tx, err := database.DB.BeginTx(ctx, nil)
+
+	if err != nil {
+		log.Printf("error when creating transaction: %v", err)
+		return errors.New("error when creating transaction")
+	}
+
+	defer tx.Rollback()
+
+	_, err = tx.ExecContext(
+		ctx,
+		"UPDATE wpone_prakerja_task SET feedback=? WHERE ID=?",
+		input.Notes, taskID,
+	)
+
+	if err != nil {
+		log.Printf("error when updating task: %v", err)
+		return errors.New("error when updating task")
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Printf("error when starting transaction: %v", err)
+		return errors.New("error when starting transaction")
+	}
+
+	return nil
 }
