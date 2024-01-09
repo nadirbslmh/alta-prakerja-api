@@ -130,3 +130,31 @@ func GetAllTasks(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, responseData)
 }
+
+func GetTaskByID(c echo.Context) error {
+	taskID := c.Param("taskID")
+
+	tID, err := strconv.Atoi(taskID)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, models.Response[any]{
+			Status:  false,
+			Message: "task ID is invalid",
+		})
+	}
+
+	task, err := services.RetrieveTaskByID(c.Request().Context(), tID)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response[any]{
+			Status:  false,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, models.Response[models.Task]{
+		Status:  true,
+		Message: "task data found",
+		Data:    task,
+	})
+}

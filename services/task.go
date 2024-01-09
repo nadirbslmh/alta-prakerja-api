@@ -46,6 +46,16 @@ func SendFeedback(ctx context.Context, input models.FeedbackInput, taskID int) (
 	return result, nil
 }
 
+func RetrieveTaskByID(ctx context.Context, taskID int) (models.Task, error) {
+	task, err := getTaskByID(ctx, taskID)
+
+	if err != nil {
+		return models.Task{}, err
+	}
+
+	return task, nil
+}
+
 func GetAllTasks(ctx context.Context, page, limit int, username string) ([]models.TaskData, error) {
 	tx, err := database.DB.BeginTx(ctx, nil)
 

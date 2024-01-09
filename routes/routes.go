@@ -37,4 +37,5 @@ func InitRoutes(e *echo.Echo) {
 	// task management
 	apiRoutes.POST("/task/feedback/:taskID", controllers.SendFeedback)
 	apiRoutes.POST("/tasks", controllers.GetAllTasks)
+	apiRoutes.POST("/tasks/:taskID", controllers.GetTaskByID)
 }
