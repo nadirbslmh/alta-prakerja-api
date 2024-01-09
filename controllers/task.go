@@ -82,7 +82,9 @@ func GetAllTasks(c echo.Context) error {
 		limit = 10
 	}
 
-	tasks, err := services.GetAllTasks(c.Request().Context(), page, limit)
+	username := c.QueryParam("username")
+
+	tasks, err := services.GetAllTasks(c.Request().Context(), page, limit, username)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response[any]{
@@ -91,7 +93,7 @@ func GetAllTasks(c echo.Context) error {
 		})
 	}
 
-	totalTasks, err := services.CountTasks(c.Request().Context())
+	totalTasks, err := services.CountTasks(c.Request().Context(), username)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response[any]{
@@ -101,12 +103,6 @@ func GetAllTasks(c echo.Context) error {
 	}
 
 	totalPages := int(math.Ceil(float64(totalTasks) / float64(limit)))
-
-	// return c.JSON(http.StatusOK, models.Response[[]models.TaskData]{
-	// 	Status:  true,
-	// 	Message: "all tasks",
-	// 	Data:    tasks,
-	// })
 
 	responseData := struct {
 		Status      bool              `json:"status"`

@@ -46,7 +46,7 @@ func SendFeedback(ctx context.Context, input models.FeedbackInput, taskID int) (
 	return result, nil
 }
 
-func GetAllTasks(ctx context.Context, page, limit int) ([]models.TaskData, error) {
+func GetAllTasks(ctx context.Context, page, limit int, username string) ([]models.TaskData, error) {
 	tx, err := database.DB.BeginTx(ctx, nil)
 
 	if err != nil {
@@ -61,8 +61,16 @@ func GetAllTasks(ctx context.Context, page, limit int) ([]models.TaskData, error
 
 	offset := (page - 1) * limit
 
-	query := fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_users.display_name FROM wpone_prakerja_task
+	var query string
+
+	if username != "" {
+		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_users.display_name FROM wpone_prakerja_task
+            JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID 
+            WHERE wpone_users.display_name LIKE '%%%s%%' AND feedback = '' LIMIT %d OFFSET %d;`, username, limit, offset)
+	} else {
+		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_users.display_name FROM wpone_prakerja_task
         JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID WHERE feedback = '' LIMIT %d OFFSET %d;`, limit, offset)
+	}
 
 	rows, err := tx.QueryContext(ctx, query)
 
@@ -88,8 +96,16 @@ func GetAllTasks(ctx context.Context, page, limit int) ([]models.TaskData, error
 	return tasks, nil
 }
 
-func CountTasks(ctx context.Context) (int, error) {
-	rows, err := database.DB.QueryContext(ctx, "SELECT COUNT(*) FROM wpone_prakerja_task WHERE feedback = '';")
+func CountTasks(ctx context.Context, username string) (int, error) {
+	var query string
+
+	if username != "" {
+		query = fmt.Sprintf(`SELECT COUNT(*) FROM wpone_prakerja_task JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID WHERE feedback = '' AND wpone_users.display_name LIKE '%%%s%%'`, username)
+	} else {
+		query = "SELECT COUNT(*) FROM wpone_prakerja_task WHERE feedback = '';"
+	}
+
+	rows, err := database.DB.QueryContext(ctx, query)
 
 	var count int
 
