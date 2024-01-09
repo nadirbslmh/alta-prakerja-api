@@ -20,6 +20,7 @@ type UploadResponse struct {
 
 type UploadData struct {
 	ID         int64  `json:"id"`
+	TaskID     int64  `json:"task_id"`
 	RedeemCode string `json:"redeem_code"`
 	Scope      string `json:"scope"`
 	Sequence   int64  `json:"sequence"`

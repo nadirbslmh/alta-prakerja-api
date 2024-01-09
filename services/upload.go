@@ -46,11 +46,13 @@ func Upload(ctx context.Context, uploadDTO models.UploadDTO) (models.UploadRespo
 
 	uploadDTO.UploadFormData.RedeemCode = userRedeemCode
 
-	err = saveTaskToDB(ctx, uploadDTO, fileURL)
+	taskID, err := saveTaskToDB(ctx, uploadDTO, fileURL)
 
 	if err != nil {
 		return models.UploadResponse{}, err
 	}
+
+	res.Data.TaskID = taskID
 
 	return res, nil
 }
@@ -121,17 +123,17 @@ func submitTask(request models.UploadRequest) (models.UploadResponse, error) {
 	return response, nil
 }
 
-func saveTaskToDB(ctx context.Context, uploadDTO models.UploadDTO, fileURL string) error {
+func saveTaskToDB(ctx context.Context, uploadDTO models.UploadDTO, fileURL string) (int64, error) {
 	tx, err := database.DB.BeginTx(ctx, nil)
 
 	if err != nil {
 		log.Printf("error when creating transaction: %v", err)
-		return errors.New("error when creating transaction")
+		return 0, errors.New("error when creating transaction")
 	}
 
 	defer tx.Rollback()
 
-	_, err = tx.ExecContext(
+	result, err := tx.ExecContext(
 		ctx,
 		"INSERT INTO wpone_prakerja_task(user_ID,sesi,sequence,link,batch,redeem_code,scope) VALUES (?,?,?,?,?,?,?)",
 		uploadDTO.UploadFormData.UserID,
@@ -145,15 +147,22 @@ func saveTaskToDB(ctx context.Context, uploadDTO models.UploadDTO, fileURL strin
 
 	if err != nil {
 		log.Printf("error when saving task data: %v", err)
-		return errors.New("error when saving task data")
+		return 0, errors.New("error when saving task data")
 	}
 
 	if err := tx.Commit(); err != nil {
 		log.Printf("error when starting transaction: %v", err)
-		return errors.New("error when starting transaction")
+		return 0, errors.New("error when starting transaction")
 	}
 
-	return nil
+	lastInsertedID, err := result.LastInsertId()
+
+	if err != nil {
+		log.Printf("error when retrieving last inserted ID: %v", err)
+		return 0, errors.New("error when retrieving last inserted ID")
+	}
+
+	return lastInsertedID, nil
 }
 
 func getRedeemByUserID(ctx context.Context, userID int) (models.Redeem, error) {
