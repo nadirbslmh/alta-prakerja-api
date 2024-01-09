@@ -46,7 +46,7 @@ func SendFeedback(ctx context.Context, input models.FeedbackInput, taskID int) (
 	return result, nil
 }
 
-func GetAllTasks(ctx context.Context) ([]models.TaskData, error) {
+func GetAllTasks(ctx context.Context, page, limit int) ([]models.TaskData, error) {
 	tx, err := database.DB.BeginTx(ctx, nil)
 
 	if err != nil {
@@ -59,8 +59,12 @@ func GetAllTasks(ctx context.Context) ([]models.TaskData, error) {
 	tasks := []models.TaskData{}
 	task := models.TaskData{}
 
-	rows, err := tx.QueryContext(ctx, `SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_users.display_name FROM wpone_prakerja_task
-	JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID WHERE feedback = '';`)
+	offset := (page - 1) * limit
+
+	query := fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_users.display_name FROM wpone_prakerja_task
+        JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID WHERE feedback = '' LIMIT %d OFFSET %d;`, limit, offset)
+
+	rows, err := tx.QueryContext(ctx, query)
 
 	if err != nil {
 		log.Printf("error when fetching tasks: %v", err)
@@ -82,6 +86,25 @@ func GetAllTasks(ctx context.Context) ([]models.TaskData, error) {
 	}
 
 	return tasks, nil
+}
+
+func CountTasks(ctx context.Context) (int, error) {
+	rows, err := database.DB.QueryContext(ctx, "SELECT COUNT(*) FROM wpone_prakerja_task WHERE feedback = '';")
+
+	var count int
+
+	if err != nil {
+		return -1, err
+	}
+
+	for rows.Next() {
+		err := rows.Scan(&count)
+		if err != nil {
+			return -1, err
+		}
+	}
+
+	return count, nil
 }
 
 func getTaskByID(ctx context.Context, taskID int) (models.Task, error) {

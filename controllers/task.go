@@ -3,6 +3,7 @@ package controllers
 import (
 	"gugcp/models"
 	"gugcp/services"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -55,7 +56,33 @@ func SendFeedback(c echo.Context) error {
 }
 
 func GetAllTasks(c echo.Context) error {
-	tasks, err := services.GetAllTasks(c.Request().Context())
+	page, err := strconv.Atoi(c.QueryParam("page"))
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, models.Response[any]{
+			Status:  false,
+			Message: "invalid page parameter",
+		})
+	}
+
+	if page <= 0 {
+		page = 1
+	}
+
+	limit, err := strconv.Atoi(c.QueryParam("limit"))
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, models.Response[any]{
+			Status:  false,
+			Message: "invalid limit parameter",
+		})
+	}
+
+	if limit <= 0 {
+		limit = 10
+	}
+
+	tasks, err := services.GetAllTasks(c.Request().Context(), page, limit)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response[any]{
@@ -64,9 +91,46 @@ func GetAllTasks(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, models.Response[[]models.TaskData]{
-		Status:  true,
-		Message: "all tasks",
-		Data:    tasks,
-	})
+	totalTasks, err := services.CountTasks(c.Request().Context())
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response[any]{
+			Status:  false,
+			Message: "error when calculating tasks",
+		})
+	}
+
+	totalPages := int(math.Ceil(float64(totalTasks) / float64(limit)))
+
+	// return c.JSON(http.StatusOK, models.Response[[]models.TaskData]{
+	// 	Status:  true,
+	// 	Message: "all tasks",
+	// 	Data:    tasks,
+	// })
+
+	responseData := struct {
+		Status      bool              `json:"status"`
+		Message     string            `json:"message"`
+		Data        []models.TaskData `json:"data"`
+		TotalPages  int               `json:"total_pages"`
+		CurrentPage int               `json:"current_page"`
+		NextPage    int               `json:"next_page,omitempty"`
+		PrevPage    int               `json:"prev_page,omitempty"`
+	}{
+		Status:      true,
+		Message:     "all tasks",
+		Data:        tasks,
+		TotalPages:  totalPages,
+		CurrentPage: page,
+	}
+
+	if page < totalPages {
+		responseData.NextPage = page + 1
+	}
+
+	if page > 1 {
+		responseData.PrevPage = page - 1
+	}
+
+	return c.JSON(http.StatusOK, responseData)
 }
