@@ -133,9 +133,10 @@ func saveTaskToDB(ctx context.Context, uploadDTO models.UploadDTO, fileURL strin
 
 	_, err = tx.ExecContext(
 		ctx,
-		"INSERT INTO wpone_prakerja_task(user_ID,sesi,link,batch,redeem_code,scope) VALUES (?,?,?,?,?,?)",
+		"INSERT INTO wpone_prakerja_task(user_ID,sesi,sequence,link,batch,redeem_code,scope) VALUES (?,?,?,?,?,?,?)",
 		uploadDTO.UploadFormData.UserID,
 		uploadDTO.UploadFormData.Session,
+		uploadDTO.UploadFormData.Sequence,
 		fileURL,
 		uploadDTO.UploadFormData.Batch,
 		uploadDTO.UploadFormData.RedeemCode,

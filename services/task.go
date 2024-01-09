@@ -23,16 +23,10 @@ func SendFeedback(ctx context.Context, input models.FeedbackInput, taskID int) (
 		return models.FeedbackResponse{}, err
 	}
 
-	seq, err := strconv.Atoi(task.Session)
-
-	if err != nil {
-		return models.FeedbackResponse{}, err
-	}
-
 	request := models.FeedbackRequest{
 		RedeemCode: task.RedeemCode,
 		Scope:      task.Scope,
-		Sequence:   int64(seq),
+		Sequence:   int64(task.Sequence),
 		Notes:      input.Notes,
 		URLFile:    task.Link,
 	}
@@ -43,7 +37,6 @@ func SendFeedback(ctx context.Context, input models.FeedbackInput, taskID int) (
 		return models.FeedbackResponse{}, err
 	}
 
-	//TODO: update task to include the review
 	err = updateTask(ctx, input, taskID)
 
 	if err != nil {
@@ -67,7 +60,7 @@ func getTaskByID(ctx context.Context, taskID int) (models.Task, error) {
 
 	result := tx.QueryRowContext(ctx, "SELECT * FROM wpone_prakerja_task WHERE ID = ?", taskID)
 
-	if err := result.Scan(&task.ID, &task.UserID, &task.Session, &task.Link, &task.Batch, &task.RedeemCode, &task.Scope, &task.Feedback); err != nil {
+	if err := result.Scan(&task.ID, &task.UserID, &task.Session, &task.Sequence, &task.Link, &task.Batch, &task.RedeemCode, &task.Scope, &task.Feedback); err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("task is not exists: %v", err)
 			return models.Task{}, errors.New("task is not exists")
