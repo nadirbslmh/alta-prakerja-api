@@ -46,6 +46,44 @@ func SendFeedback(ctx context.Context, input models.FeedbackInput, taskID int) (
 	return result, nil
 }
 
+func GetAllTasks(ctx context.Context) ([]models.TaskData, error) {
+	tx, err := database.DB.BeginTx(ctx, nil)
+
+	if err != nil {
+		log.Printf("error when creating transaction: %v", err)
+		return []models.TaskData{}, errors.New("error when creating transaction")
+	}
+
+	defer tx.Rollback()
+
+	tasks := []models.TaskData{}
+	task := models.TaskData{}
+
+	rows, err := tx.QueryContext(ctx, `SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_users.display_name FROM wpone_prakerja_task
+	JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID WHERE feedback = '';`)
+
+	if err != nil {
+		log.Printf("error when fetching tasks: %v", err)
+		return []models.TaskData{}, errors.New("error when fetching tasks")
+	}
+
+	for rows.Next() {
+		err := rows.Scan(&task.ID, &task.UserID, &task.Sequence, &task.Link, &task.Scope, &task.Name)
+		if err != nil {
+			log.Printf("error when fetching tasks: %v", err)
+			return []models.TaskData{}, errors.New("error when fetching tasks")
+		}
+		tasks = append(tasks, task)
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Printf("error when starting transaction: %v", err)
+		return []models.TaskData{}, errors.New("error when starting transaction")
+	}
+
+	return tasks, nil
+}
+
 func getTaskByID(ctx context.Context, taskID int) (models.Task, error) {
 	tx, err := database.DB.BeginTx(ctx, nil)
 

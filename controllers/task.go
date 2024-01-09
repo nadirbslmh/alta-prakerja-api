@@ -53,3 +53,20 @@ func SendFeedback(c echo.Context) error {
 		Data:    result,
 	})
 }
+
+func GetAllTasks(c echo.Context) error {
+	tasks, err := services.GetAllTasks(c.Request().Context())
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.Response[any]{
+			Status:  false,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, models.Response[[]models.TaskData]{
+		Status:  true,
+		Message: "all tasks",
+		Data:    tasks,
+	})
+}
