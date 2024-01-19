@@ -27,12 +27,7 @@ func GenerateURL(c echo.Context) error {
 		})
 	}
 
-	switch input.Sequence {
-	case 1:
-		input.RedirectURI = utils.GetConfig("REDIRECT_URI_REDEEM")
-	default:
-		input.RedirectURI = utils.GetConfig("REDIRECT_URI_PROFILE")
-	}
+	input.RedirectURI = utils.GetConfig("REDIRECT_URI_REDEEM")
 
 	response, err := services.GenerateURL(input)
 
