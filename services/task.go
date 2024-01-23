@@ -56,7 +56,7 @@ func RetrieveTaskByID(ctx context.Context, taskID int) (models.Task, error) {
 	return task, nil
 }
 
-func GetAllTasks(ctx context.Context, page, limit int, username string) ([]models.TaskData, error) {
+func GetAllTasks(ctx context.Context) ([]models.TaskData, error) {
 	tx, err := database.DB.BeginTx(ctx, nil)
 
 	if err != nil {
@@ -68,6 +68,12 @@ func GetAllTasks(ctx context.Context, page, limit int, username string) ([]model
 
 	tasks := []models.TaskData{}
 	task := models.TaskData{}
+
+	page := ctx.Value(utils.PageKey).(int)
+	limit := ctx.Value(utils.LimitKey).(int)
+	username := ctx.Value(utils.UsernameKey).(string)
+
+	log.Println("from context: ", page, limit, username)
 
 	offset := (page - 1) * limit
 

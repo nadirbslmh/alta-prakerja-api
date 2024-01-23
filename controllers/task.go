@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"context"
 	"gugcp/models"
 	"gugcp/services"
+	"gugcp/utils"
 	"math"
 	"net/http"
 	"strconv"
@@ -84,7 +86,11 @@ func GetAllTasks(c echo.Context) error {
 
 	username := c.QueryParam("username")
 
-	tasks, err := services.GetAllTasks(c.Request().Context(), page, limit, username)
+	ctx := context.WithValue(c.Request().Context(), utils.PageKey, page)
+	ctx = context.WithValue(ctx, utils.LimitKey, limit)
+	ctx = context.WithValue(ctx, utils.UsernameKey, username)
+
+	tasks, err := services.GetAllTasks(ctx)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response[any]{
