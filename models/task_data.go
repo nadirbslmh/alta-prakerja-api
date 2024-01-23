@@ -7,5 +7,6 @@ type TaskData struct {
 	Link     string `json:"link"`
 	Scope    string `json:"scope"`
 	Batch    string `json:"batch"`
+	Feedback string `json:"feedback"`
 	Name     string `json:"name"`
 }
