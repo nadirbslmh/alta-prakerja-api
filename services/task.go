@@ -201,7 +201,7 @@ func getTaskByID(ctx context.Context, taskID int) (models.Task, error) {
 
 	result := tx.QueryRowContext(ctx, "SELECT * FROM wpone_prakerja_task WHERE ID = ?", taskID)
 
-	if err := result.Scan(&task.ID, &task.UserID, &task.Session, &task.Sequence, &task.Link, &task.Batch, &task.RedeemCode, &task.Scope, &task.Feedback); err != nil {
+	if err := result.Scan(&task.ID, &task.UserID, &task.Session, &task.Sequence, &task.Link, &task.Batch, &task.CourseTag, &task.RedeemCode, &task.Scope, &task.Feedback, &task.Score); err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("task is not exists: %v", err)
 			return models.Task{}, errors.New("task is not exists")
@@ -297,8 +297,8 @@ func updateTask(ctx context.Context, input models.FeedbackInput, taskID int) err
 
 	_, err = tx.ExecContext(
 		ctx,
-		"UPDATE wpone_prakerja_task SET feedback=? WHERE ID=?",
-		input.Notes, taskID,
+		"UPDATE wpone_prakerja_task SET feedback=?, score=? WHERE ID=?",
+		input.Notes, input.Score, taskID,
 	)
 
 	if err != nil {

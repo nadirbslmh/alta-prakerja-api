@@ -7,7 +7,9 @@ type Task struct {
 	Sequence   int    `json:"sequence"`
 	Link       string `json:"link"`
 	Batch      string `json:"batch"`
+	CourseTag  string `json:"course_tag"`
 	RedeemCode string `json:"redeem_code"`
 	Scope      string `json:"scope"`
 	Feedback   string `json:"feedback"`
+	Score      int    `json:"score"`
 }

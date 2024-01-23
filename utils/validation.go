@@ -18,6 +18,10 @@ func GetValidationErrorMessage(err validator.FieldError) string {
 		return "the uri is invalid"
 	case "sequenceValid":
 		return "the sequence value must be from 1-10 or 999"
+	case "courseTagValid":
+		return "the course tag is invalid"
+	case "scoreValid":
+		return "the score value is invalid"
 	case "oneof":
 		return "the value of " + err.Field() + " must be tpm or uk"
 	case "gte":
@@ -37,6 +41,10 @@ func RegisterCourseTagValidator(validate *validator.Validate) {
 	validate.RegisterValidation("courseTagValid", courseTagValidator)
 }
 
+func RegisterScoreValidator(validate *validator.Validate) {
+	validate.RegisterValidation("scoreValid", taskScoreValidator)
+}
+
 func sequenceValidator(fl validator.FieldLevel) bool {
 	value := fl.Field().Interface().(int)
 
@@ -51,4 +59,13 @@ func courseTagValidator(fl validator.FieldLevel) bool {
 	isValidCourseTag := slices.Contains[[]string](COURSE_TAGS, value)
 
 	return isValidCourseTag
+}
+
+func taskScoreValidator(fl validator.FieldLevel) bool {
+	value := fl.Field().Interface().(int)
+
+	scores := []int{10, 20, 30, 40, 50, 60, 70, 80, 90, 100}
+	isValidScore := slices.Contains[[]int](scores, value)
+
+	return isValidScore
 }

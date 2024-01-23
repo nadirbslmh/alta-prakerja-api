@@ -8,13 +8,14 @@ import (
 
 type FeedbackInput struct {
 	Notes string `json:"notes" validate:"required"`
+	Score int    `json:"score" validate:"required,scoreValid"`
 }
 
 func (r *FeedbackInput) Validate() []*ValidationErrorResponse {
 	var errors []*ValidationErrorResponse
 
 	validate := validator.New()
-	utils.RegisterSequenceValidator(validate)
+	utils.RegisterScoreValidator(validate)
 	err := validate.Struct(r)
 
 	if err != nil {
