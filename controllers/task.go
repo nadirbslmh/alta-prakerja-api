@@ -85,6 +85,7 @@ func GetAllTasks(c echo.Context) error {
 	}
 
 	username := c.QueryParam("username")
+	courseTag := c.QueryParam("course")
 	batch := c.QueryParam("batch")
 
 	if batch == "" {
@@ -95,6 +96,7 @@ func GetAllTasks(c echo.Context) error {
 	ctx = context.WithValue(ctx, utils.LimitKey, limit)
 	ctx = context.WithValue(ctx, utils.UsernameKey, username)
 	ctx = context.WithValue(ctx, utils.BatchKey, batch)
+	ctx = context.WithValue(ctx, utils.CourseTagKey, courseTag)
 
 	tasks, err := services.GetAllTasks(ctx)
 
