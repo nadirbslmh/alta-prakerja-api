@@ -141,6 +141,38 @@ func CountTasks(ctx context.Context) (int, error) {
 	return count, nil
 }
 
+func GetTaskDetails(ctx context.Context, taskID int) (models.TaskData, error) {
+	tx, err := database.DB.BeginTx(ctx, nil)
+
+	if err != nil {
+		log.Printf("error when creating transaction: %v", err)
+		return models.TaskData{}, errors.New("error when creating transaction")
+	}
+
+	defer tx.Rollback()
+
+	var task models.TaskData
+
+	result := tx.QueryRowContext(ctx, `SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_prakerja_task.feedback, wpone_users.display_name FROM wpone_prakerja_task 
+	JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID  WHERE wpone_prakerja_task.ID = ?`, taskID)
+
+	if err := result.Scan(&task.ID, &task.UserID, &task.Sequence, &task.Link, &task.Scope, &task.Batch, &task.Feedback, &task.Name); err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("task is not exists: %v", err)
+			return models.TaskData{}, errors.New("task is not exists")
+		}
+		log.Printf("error when getting task: %v", err)
+		return models.TaskData{}, errors.New("error when getting task")
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Printf("error when starting transaction: %v", err)
+		return models.TaskData{}, errors.New("error when starting transaction")
+	}
+
+	return task, nil
+}
+
 func getTaskByID(ctx context.Context, taskID int) (models.Task, error) {
 	tx, err := database.DB.BeginTx(ctx, nil)
 

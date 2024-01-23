@@ -155,7 +155,7 @@ func GetTaskByID(c echo.Context) error {
 		})
 	}
 
-	task, err := services.RetrieveTaskByID(c.Request().Context(), tID)
+	task, err := services.GetTaskDetails(c.Request().Context(), tID)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response[any]{
@@ -164,7 +164,7 @@ func GetTaskByID(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, models.Response[models.Task]{
+	return c.JSON(http.StatusOK, models.Response[models.TaskData]{
 		Status:  true,
 		Message: "task data found",
 		Data:    task,
