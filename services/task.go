@@ -72,6 +72,7 @@ func GetAllTasks(ctx context.Context) ([]models.TaskData, error) {
 	page := ctx.Value(utils.PageKey).(int)
 	limit := ctx.Value(utils.LimitKey).(int)
 	username := ctx.Value(utils.UsernameKey).(string)
+	batch := ctx.Value(utils.BatchKey).(string)
 
 	offset := (page - 1) * limit
 
@@ -80,10 +81,10 @@ func GetAllTasks(ctx context.Context) ([]models.TaskData, error) {
 	if username != "" {
 		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_users.display_name FROM wpone_prakerja_task
             JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID 
-            WHERE wpone_users.display_name LIKE '%%%s%%' AND feedback = '' LIMIT %d OFFSET %d;`, username, limit, offset)
+            WHERE wpone_users.display_name LIKE '%%%s%%' AND batch = '%s' AND feedback = '' LIMIT %d OFFSET %d;`, username, batch, limit, offset)
 	} else {
 		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_users.display_name FROM wpone_prakerja_task
-        JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID WHERE feedback = '' LIMIT %d OFFSET %d;`, limit, offset)
+        JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID WHERE feedback = '' AND batch = '%s' LIMIT %d OFFSET %d;`, batch, limit, offset)
 	}
 
 	rows, err := tx.QueryContext(ctx, query)

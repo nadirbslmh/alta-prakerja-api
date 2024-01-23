@@ -85,10 +85,16 @@ func GetAllTasks(c echo.Context) error {
 	}
 
 	username := c.QueryParam("username")
+	batch := c.QueryParam("batch")
+
+	if batch == "" {
+		batch = "1"
+	}
 
 	ctx := context.WithValue(c.Request().Context(), utils.PageKey, page)
 	ctx = context.WithValue(ctx, utils.LimitKey, limit)
 	ctx = context.WithValue(ctx, utils.UsernameKey, username)
+	ctx = context.WithValue(ctx, utils.BatchKey, batch)
 
 	tasks, err := services.GetAllTasks(ctx)
 
