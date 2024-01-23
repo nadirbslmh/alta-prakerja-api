@@ -73,18 +73,16 @@ func GetAllTasks(ctx context.Context) ([]models.TaskData, error) {
 	limit := ctx.Value(utils.LimitKey).(int)
 	username := ctx.Value(utils.UsernameKey).(string)
 
-	log.Println("from context: ", page, limit, username)
-
 	offset := (page - 1) * limit
 
 	var query string
 
 	if username != "" {
-		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_users.display_name FROM wpone_prakerja_task
+		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_users.display_name FROM wpone_prakerja_task
             JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID 
             WHERE wpone_users.display_name LIKE '%%%s%%' AND feedback = '' LIMIT %d OFFSET %d;`, username, limit, offset)
 	} else {
-		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_users.display_name FROM wpone_prakerja_task
+		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_users.display_name FROM wpone_prakerja_task
         JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID WHERE feedback = '' LIMIT %d OFFSET %d;`, limit, offset)
 	}
 
@@ -96,7 +94,7 @@ func GetAllTasks(ctx context.Context) ([]models.TaskData, error) {
 	}
 
 	for rows.Next() {
-		err := rows.Scan(&task.ID, &task.UserID, &task.Sequence, &task.Link, &task.Scope, &task.Name)
+		err := rows.Scan(&task.ID, &task.UserID, &task.Sequence, &task.Link, &task.Scope, &task.Batch, &task.Name)
 		if err != nil {
 			log.Printf("error when fetching tasks: %v", err)
 			return []models.TaskData{}, errors.New("error when fetching tasks")
