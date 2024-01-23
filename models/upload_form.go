@@ -12,6 +12,7 @@ type UploadForm struct {
 	Batch      string `form:"batch" validate:"required"`
 	RedeemCode string `form:"redeemCode"`
 	Scope      string `form:"scope" validate:"required,oneof=tpm uk"`
+	CourseTag  string `form:"courseTag" validate:"required,courseTagValid"`
 	Sequence   int    `form:"sequence" validate:"required,numeric,gte=1,lte=999"`
 }
 
@@ -20,6 +21,7 @@ func (r *UploadForm) Validate() []*ValidationErrorResponse {
 
 	validate := validator.New()
 	utils.RegisterSequenceValidator(validate)
+	utils.RegisterCourseTagValidator(validate)
 	err := validate.Struct(r)
 
 	if err != nil {

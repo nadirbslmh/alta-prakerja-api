@@ -1,6 +1,10 @@
 package utils
 
-import "github.com/go-playground/validator/v10"
+import (
+	"slices"
+
+	"github.com/go-playground/validator/v10"
+)
 
 func GetValidationErrorMessage(err validator.FieldError) string {
 	switch err.Tag() {
@@ -29,10 +33,22 @@ func RegisterSequenceValidator(validate *validator.Validate) {
 	validate.RegisterValidation("sequenceValid", sequenceValidator)
 }
 
+func RegisterCourseTagValidator(validate *validator.Validate) {
+	validate.RegisterValidation("courseTagValid", courseTagValidator)
+}
+
 func sequenceValidator(fl validator.FieldLevel) bool {
 	value := fl.Field().Interface().(int)
 
 	isValidSequence := (value >= 1 && value <= 10) || value == 999
 
 	return isValidSequence
+}
+
+func courseTagValidator(fl validator.FieldLevel) bool {
+	value := fl.Field().Interface().(string)
+
+	isValidCourseTag := slices.Contains[[]string](COURSE_TAGS, value)
+
+	return isValidCourseTag
 }
