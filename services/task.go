@@ -80,19 +80,19 @@ func GetAllTasks(ctx context.Context) ([]models.TaskData, error) {
 	var query string
 
 	if username != "" {
-		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_prakerja_task.course_tag, wpone_prakerja_task.feedback, wpone_users.display_name FROM wpone_prakerja_task
+		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_prakerja_task.course_tag, wpone_prakerja_task.feedback, wpone_prakerja_task.score, wpone_users.display_name FROM wpone_prakerja_task
             JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID 
             WHERE wpone_users.display_name LIKE '%%%s%%' AND batch = '%s' LIMIT %d OFFSET %d;`, username, batch, limit, offset)
 	} else if username != "" && courseTag != "" {
-		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_prakerja_task.course_tag, wpone_prakerja_task.feedback, wpone_users.display_name FROM wpone_prakerja_task
+		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_prakerja_task.course_tag, wpone_prakerja_task.feedback, wpone_prakerja_task.score, wpone_users.display_name FROM wpone_prakerja_task
             JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID 
             WHERE wpone_users.display_name LIKE '%%%s%%' AND course_tag = '%s' AND batch = '%s' LIMIT %d OFFSET %d;`, username, courseTag, batch, limit, offset)
 	} else if courseTag != "" {
-		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_prakerja_task.course_tag, wpone_prakerja_task.feedback, wpone_users.display_name FROM wpone_prakerja_task
+		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_prakerja_task.course_tag, wpone_prakerja_task.feedback, wpone_prakerja_task.score, wpone_users.display_name FROM wpone_prakerja_task
             JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID 
             WHERE course_tag = '%s' AND batch = '%s' LIMIT %d OFFSET %d;`, courseTag, batch, limit, offset)
 	} else {
-		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_prakerja_task.course_tag, wpone_prakerja_task.feedback, wpone_users.display_name FROM wpone_prakerja_task
+		query = fmt.Sprintf(`SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_prakerja_task.course_tag, wpone_prakerja_task.feedback, wpone_prakerja_task.score, wpone_users.display_name FROM wpone_prakerja_task
         JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID WHERE batch = '%s' LIMIT %d OFFSET %d;`, batch, limit, offset)
 	}
 
@@ -104,7 +104,7 @@ func GetAllTasks(ctx context.Context) ([]models.TaskData, error) {
 	}
 
 	for rows.Next() {
-		err := rows.Scan(&task.ID, &task.UserID, &task.Sequence, &task.Link, &task.Scope, &task.Batch, &task.CourseTag, &task.Feedback, &task.Name)
+		err := rows.Scan(&task.ID, &task.UserID, &task.Sequence, &task.Link, &task.Scope, &task.Batch, &task.CourseTag, &task.Feedback, &task.Score, &task.Name)
 		if err != nil {
 			log.Printf("error when fetching tasks: %v", err)
 			return []models.TaskData{}, errors.New("error when fetching tasks")
@@ -167,10 +167,10 @@ func GetTaskDetails(ctx context.Context, taskID int) (models.TaskData, error) {
 
 	var task models.TaskData
 
-	result := tx.QueryRowContext(ctx, `SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_prakerja_task.feedback, wpone_users.display_name FROM wpone_prakerja_task 
+	result := tx.QueryRowContext(ctx, `SELECT wpone_prakerja_task.ID, wpone_prakerja_task.user_ID, wpone_prakerja_task.sequence, wpone_prakerja_task.link, wpone_prakerja_task.scope, wpone_prakerja_task.batch, wpone_prakerja_task.feedback, wpone_prakerja_task.score, wpone_users.display_name FROM wpone_prakerja_task 
 	JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID  WHERE wpone_prakerja_task.ID = ?`, taskID)
 
-	if err := result.Scan(&task.ID, &task.UserID, &task.Sequence, &task.Link, &task.Scope, &task.Batch, &task.Feedback, &task.Name); err != nil {
+	if err := result.Scan(&task.ID, &task.UserID, &task.Sequence, &task.Link, &task.Scope, &task.Batch, &task.Feedback, &task.Score, &task.Name); err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("task is not exists: %v", err)
 			return models.TaskData{}, errors.New("task is not exists")

@@ -9,5 +9,6 @@ type TaskData struct {
 	Batch     string `json:"batch"`
 	CourseTag string `json:"course_tag"`
 	Feedback  string `json:"feedback"`
+	Score     int    `json:"score"`
 	Name      string `json:"name"`
 }
