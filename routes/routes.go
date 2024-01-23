@@ -10,8 +10,7 @@ import (
 
 func InitRoutes(e *echo.Echo) {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		// AllowOrigins: []string{"https://one.alterra.academy"},
-		AllowOrigins: []string{"*"}, // TESTING ONLY
+		AllowOrigins: []string{"https://one.alterra.academy"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 		AllowMethods: []string{http.MethodPost},
 	}))
