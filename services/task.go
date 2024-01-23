@@ -111,13 +111,16 @@ func GetAllTasks(ctx context.Context) ([]models.TaskData, error) {
 	return tasks, nil
 }
 
-func CountTasks(ctx context.Context, username string) (int, error) {
+func CountTasks(ctx context.Context) (int, error) {
 	var query string
 
+	username := ctx.Value(utils.UsernameKey).(string)
+	batch := ctx.Value(utils.BatchKey).(string)
+
 	if username != "" {
-		query = fmt.Sprintf(`SELECT COUNT(*) FROM wpone_prakerja_task JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID WHERE feedback = '' AND wpone_users.display_name LIKE '%%%s%%'`, username)
+		query = fmt.Sprintf(`SELECT COUNT(*) FROM wpone_prakerja_task JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID WHERE feedback = '' AND wpone_users.display_name LIKE '%%%s%%' AND batch = '%s'`, username, batch)
 	} else {
-		query = "SELECT COUNT(*) FROM wpone_prakerja_task WHERE feedback = '';"
+		query = fmt.Sprintf(`SELECT COUNT(*) FROM wpone_prakerja_task JOIN wpone_users ON wpone_prakerja_task.user_ID = wpone_users.ID WHERE feedback = '' AND batch = '%s'`, batch)
 	}
 
 	rows, err := database.DB.QueryContext(ctx, query)

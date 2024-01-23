@@ -105,7 +105,7 @@ func GetAllTasks(c echo.Context) error {
 		})
 	}
 
-	totalTasks, err := services.CountTasks(c.Request().Context(), username)
+	totalTasks, err := services.CountTasks(ctx)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, models.Response[any]{
